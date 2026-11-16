@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UPC Label Generator — Free UPC-A Barcode &amp; Printable Label Maker</title>
+<meta name="description" content="Generate a valid UPC-A barcode from 11 digits, we compute the 12th check digit for you, then print it on Avery label sheets. Free PNG and SVG, no sign-up, commercial use allowed.">
+<link rel="canonical" href="https://getupclabel.com/">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+<script src="/assets/app.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="/">Get UPC Label</a>
+  <nav>
+    <a href="#tool">Generator</a>
+    <a href="#gs1">GS1 numbers</a>
+    <a href="#how">How it works</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>UPC Label Generator</h1>
+    <p class="sub">Turn 11 digits into a valid UPC-A barcode, lay it out on Avery label sheets,
+       and export a print-ready PDF. Free, unlimited, no sign-up.</p>
+  </section>
+
+  <section id="tool" class="card">
+    <h2>Generate a UPC label</h2>
+    <form id="form" autocomplete="off">
+      <div class="grid">
+        <label class="field">
+          <span>UPC-A number (11 digits — the 12th check digit is added for you)</span>
+          <input id="upc" name="upc" inputmode="numeric" maxlength="12" placeholder="03600029145" required>
+        </label>
+        <label class="field">
+          <span>Product name on the label (optional)</span>
+          <input id="product" name="product" maxlength="60" placeholder="Organic green tea 500ml">
+        </label>
+        <label class="field">
+          <span>Copies</span>
+          <input id="qty" name="qty" type="number" min="1" max="300" value="1">
+        </label>
+        <label class="field">
+          <span>Label sheet</span>
+          <select id="sheet">
+            <option value="5160" selected>Avery 5160 — 30 labels (2.625 × 1 in)</option>
+            <option value="5163">Avery 5163 — 10 labels (4 × 2 in)</option>
+            <option value="5164">Avery 5164 — 6 labels (3.33 × 4 in)</option>
+          </select>
+        </label>
+      </div>
+      <div class="actions">
+        <button type="submit" class="primary">Generate barcode</button>
+        <button type="button" id="btn-png">Download PNG</button>
+        <button type="button" id="btn-svg">Download SVG</button>
+        <button type="button" id="btn-pdf">Export label PDF</button>
+      </div>
+    </form>
+
+    <details class="batch">
+      <summary>Batch: import a CSV (upc, product, qty)</summary>
+      <p class="hint">Columns: <code>upc</code>, <code>product</code> (optional), <code>qty</code> (optional).
+         Up to 500 rows. Everything is processed in your browser — nothing is uploaded.</p>
+      <input type="file" id="csv" accept=".csv,text/csv">
+    </details>
+
+    <p id="msg" class="msg" role="status"></p>
+    <div id="preview" class="preview"></div>
+  </section>
+
+  <section id="gs1" class="card">
+    <h2>Do I need a GS1 number to print a UPC label?</h2>
+    <p><strong>The barcode is free; the number may not be.</strong> A UPC-A barcode is just a printed
+       encoding of a 12-digit number. This tool makes that barcode for you at no cost. But if you want
+       your product to scan in a retail store or on Amazon, the number inside the barcode has to be one
+       you are authorised to use — that means a GTIN / company prefix issued by GS1, purchased through
+       GS1 US in the United States.</p>
+    <p><strong>What GS1 US charges</strong> (published on gs1us.org): a single GTIN is <strong>$30 with
+       no annual fee</strong>; 10 GTINs are $250 plus $50/year; 100 GTINs are $750 plus $150/year;
+       1,000 GTINs are $2,500 plus $500/year. A company prefix is what lets you assign numbers
+       yourself within your own range.</p>
+    <p><strong>Numbers you invent yourself are for internal use only</strong> — inventory, warehouse,
+       in-house tracking. They must not go on a product you sell to the public: an invented number can
+       collide with a number another brand already owns, and the retailer will reject the listing or
+       charge the item to the wrong company.</p>
+    <p><strong>How to read the 12 digits:</strong> the first 1–11 digits are the company prefix plus
+       the item reference, and the 12th digit is a check digit the scanner verifies. Enter 11 digits here
+       and the 12th is computed for you; if you paste all 12, we validate the check digit before drawing.</p>
+  </section>
+
+  <section id="how" class="card">
+    <h2>How it works</h2>
+    <ol>
+      <li><strong>Enter 11 digits.</strong> We compute the UPC-A check digit and draw the barcode — PNG,
+        SVG, or straight onto a label sheet.</li>
+      <li><strong>Pick your label sheet.</strong> The PDF is laid out to Avery 5160 / 5163 / 5164
+        geometry, so what you see is where the labels land when you print at 100% scale.</li>
+      <li><strong>Print and scan.</strong> Print at 100% (no "fit to page"), on matte label stock.
+        Test one sheet with a real scanner before running a full batch.</li>
+    </ol>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <a href="/privacy.html">Privacy</a>
+  <a href="/terms.html">Terms</a>
+  <a href="/contact.html">Contact</a>
+  <p>Free UPC-A barcode generation in your browser. Commercial use of the generated barcode is allowed.</p>
+</footer>
+</body>
+</html>
