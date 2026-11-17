@@ -143,6 +143,41 @@
        PNG and SVG download the first accepted product; Export label PDF includes the entire accepted batch.
        Keep UPC columns as text when saving from a spreadsheet, then check the import status for skipped rows.</p>
   </section>
+  <section id="barcode-formats" class="card">
+    <h2>UPC-A, EAN-13, or GTIN-14: which do you need?</h2>
+    <p><strong>UPC-A</strong> encodes a 12-digit GTIN and is widely used for consumer products in North America,
+       such as a bottle of shampoo or a box of cereal. Use the number assigned to the specific product variation.
+       This generator accepts UPC-A numbers only; it adds or validates the check digit without issuing a new product identifier.</p>
+    <p><strong>EAN-13</strong> encodes a 13-digit GTIN and is commonly used for retail products outside North America.
+       UPC-A and EAN-13 both serve retail checkout workflows; the appropriate choice depends on the assigned identifier
+       and trading partner requirements, rather than the product category alone. Do not remove digits from an EAN-13
+       to force it into this UPC-A tool.</p>
+    <p><strong>GTIN-14</strong> identifies trade item groupings, such as a wholesale case containing several identical
+       retail units. It is an identifier rather than a barcode drawing format, and can be carried in symbols such as
+       ITF-14 or GS1-128. A case identifier is separate from the retail unit identifier; do not use this generator
+       to create a case barcode by trimming its number.</p>
+    <p class="hint">For format and packaging requirements, see the
+       <a href="https://www.gs1us.org/upcs-barcodes-prefixes/what-is-a-gtin">GS1 US guide to GTINs</a> and
+       <a href="https://support.gs1.org/support/solutions/articles/43000734104-which-barcodes-are-used-to-represent-gtins-">GS1 barcode format guidance</a>.</p>
+  </section>
+
+  <section id="label-printing" class="card">
+    <h2>Choosing label paper and a printer</h2>
+    <p>For the Avery sheet PDFs from this tool, use a printer that accepts US Letter sheets and label stock
+       explicitly rated for that printer. A laser printer uses toner; an inkjet printer uses ink, so check the
+       label packaging for compatibility before loading a sheet. Use the matching template number and preserve
+       the blank margins around each barcode.</p>
+    <p>Thermal printers use roll or fanfold media rather than these Avery sheet layouts. Direct thermal printing
+       requires heat-sensitive stock; thermal transfer printing requires compatible stock and a ribbon.
+       Download the individual PNG or SVG for a separate label layout that matches your thermal printer.
+       The current PDF export does not provide a custom thermal roll size. Avery explains why
+       <a href="https://www.avery.com/help/article/can-you-print-laser-inkjet-labels-with-a-thermal-printer">laser and inkjet sheets should not be used in thermal printers</a>.</p>
+    <p>Print sheet PDFs at <strong>100% scale or Actual size</strong>, with US Letter selected and Fit to page
+       disabled. Start with plain paper, compare the positions against the label sheet, then print and scan a
+       sample on the intended stock. Check the bottom row as well as the top: scaling errors can become more
+       noticeable farther down the sheet. Repeat the check when changing printer, stock, or driver settings.</p>
+  </section>
+
 <section id="faq" class="card"><h2>UPC label questions</h2>
 <h3>Can I enter an existing 12-digit UPC?</h3><p>Yes. Enter either 11 digits to calculate the final check digit, or all 12 digits to validate an existing UPC-A. Keep leading zeros: they are part of the number. Letters, spaces inside a number, and other barcode formats are rejected.</p>
 <h3>Does a valid check digit mean I own the number?</h3><p>No. A check digit verifies the arithmetic of a UPC-A number. It does not confirm ownership, product registration, or retailer acceptance. Use numbers assigned to your business and confirm requirements with the retailer before labeling stock.</p>
