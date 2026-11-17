@@ -92,8 +92,25 @@
        your product to scan in a retail store or on Amazon, the number inside the barcode has to be one
        you are authorised to use — that means a GTIN / company prefix issued by GS1, purchased through
        GS1 US in the United States.</p>
-    <p>Check current number licensing options directly with <a href="https://www.gs1us.org/">GS1 US</a>
-       or your local GS1 organisation. Generating a barcode here does not register a number or assign ownership.</p>
+    <h3>What does a GS1 US UPC number cost?</h3>
+    <p>Generating a barcode image here is free. Licensing a product number from GS1 US is a separate cost.
+       A single GS1 US GTIN costs <strong>$30 with no annual renewal fee</strong>.
+       Company prefix options provide capacity for multiple product numbers:</p>
+    <div class="table-scroll">
+      <table class="pricing">
+        <caption>GS1 US number licensing fees (USD)</caption>
+        <thead><tr><th scope="col">Number capacity</th><th scope="col">Initial fee</th><th scope="col">Annual renewal</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">1 GS1 US GTIN</th><td>$30</td><td>$0</td></tr>
+          <tr><th scope="row">10 (company prefix)</th><td>$250</td><td>$50</td></tr>
+          <tr><th scope="row">100 (company prefix)</th><td>$750</td><td>$150</td></tr>
+          <tr><th scope="row">1,000 (company prefix)</th><td>$2,500</td><td>$500</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="hint">Source: <a href="https://www.gs1us.org/upcs-barcodes-prefixes/how-to-get-a-upc-barcode">GS1 US official pricing</a>.
+       Checked <time datetime="2026-11-17">November 17, 2026</time>. Prices may change; confirm with GS1 US before licensing.
+       Other countries have their own GS1 organisations and fees. Generating a barcode here does not register a number or assign ownership.</p>
     <p><strong>Numbers you invent yourself are for internal use only</strong> — inventory, warehouse,
        in-house tracking. They must not go on a product you sell to the public: an invented number can
        collide with a number another brand already owns, and the retailer will reject the listing or
@@ -104,7 +121,10 @@
   </section>
 
   <section id="how" class="card">
-    <h2>How it works</h2>
+    <h2>How to generate a UPC label</h2>
+    <p>For a quick example, enter <code>03600029145</code> in the generator and select Generate barcode.
+       The result is <code>036000291452</code>: the final digit is calculated automatically.
+       This example demonstrates the format; it does not assign the number to your product.</p>
     <ol>
       <li><strong>Enter 11 digits.</strong> We compute the UPC-A check digit and draw the barcode — PNG,
         SVG, or straight onto a label sheet.</li>
@@ -113,6 +133,15 @@
       <li><strong>Print and scan.</strong> Print at 100% (no "fit to page"), on matte label stock.
         Test one sheet with a real scanner before running a full batch.</li>
     </ol>
+    <h3>Generate UPC labels from a CSV</h3>
+    <p>For several products, open the CSV importer above and choose a file with these columns.
+       Replace the example number with one assigned to your product before printing retail labels:</p>
+    <pre class="csv-example"><code>upc,product,qty
+03600029145,Example product,2</code></pre>
+    <p>This row creates two copies of the same label. The product name appears below the barcode in the PDF.
+       Choose Avery 5160 for 30 labels per sheet, 5163 for 10, or 5164 for 6.
+       PNG and SVG download the first accepted product; Export label PDF includes the entire accepted batch.
+       Keep UPC columns as text when saving from a spreadsheet, then check the import status for skipped rows.</p>
   </section>
 <section id="faq" class="card"><h2>UPC label questions</h2>
 <h3>Can I enter an existing 12-digit UPC?</h3><p>Yes. Enter either 11 digits to calculate the final check digit, or all 12 digits to validate an existing UPC-A. Keep leading zeros: they are part of the number. Letters, spaces inside a number, and other barcode formats are rejected.</p>

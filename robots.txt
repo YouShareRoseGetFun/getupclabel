@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /README.md
+Disallow: /tests/
 
 Sitemap: https://getupclabel.com/sitemap.xml
