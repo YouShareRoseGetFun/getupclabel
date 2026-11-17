@@ -2,9 +2,9 @@
   'use strict';
 
   var LABELS = {
-    '5160': { w: 66.7, h: 25.4, cols: 3, rows: 10, mt: 12.7, ml: 4.8, gx: 3.2, gy: 0 },
-    '5163': { w: 101.6, h: 50.8, cols: 2, rows: 5, mt: 12.7, ml: 4.8, gx: 3.2, gy: 0 },
-    '5164': { w: 84.7, h: 101.6, cols: 2, rows: 3, mt: 12.7, ml: 4.8, gx: 3.2, gy: 0 }
+    '5160': { w: 66.675, h: 25.4, cols: 3, rows: 10, mt: 12.7, ml: 4.7625, gx: 3.175, gy: 0 },
+    '5163': { w: 101.6, h: 50.8, cols: 2, rows: 5, mt: 12.7, ml: 4.7625, gx: 3.175, gy: 0 },
+    '5164': { w: 101.6, h: 84.6667, cols: 2, rows: 3, mt: 12.7, ml: 4.7625, gx: 3.175, gy: 0 }
   };
 
   var $ = function (id) { return document.getElementById(id); };
@@ -16,7 +16,7 @@
     msgEl.className = 'msg' + (ok ? ' ok' : '');
   }
 
-  function digits(s) { return String(s || '').replace(/\D+/g, ''); }
+  function digits(s) { return String(s || '').trim(); }
 
   function checkDigit(d11) {
     var sum = 0;
@@ -30,6 +30,7 @@
   // 11 digits -> append check digit; 12 digits -> validate; else null
   function fullCode(raw) {
     var d = digits(raw);
+    if (!/^\d{11,12}$/.test(d)) return null;
     if (d.length === 11) return d + checkDigit(d);
     if (d.length === 12) {
       return Number(d.charAt(11)) === checkDigit(d.slice(0, 11)) ? d : null;
@@ -40,8 +41,8 @@
   function canvasFor(code) {
     var c = document.createElement('canvas');
     JsBarcode(c, code, {
-      format: 'UPC', displayValue: true, fontSize: 18, textMargin: 2,
-      margin: 6, width: 2, height: 70, background: '#ffffff', lineColor: '#000000'
+      format: 'UPC', displayValue: true, fontSize: 54, textMargin: 6,
+      margin: 60, width: 6, height: 210, background: '#ffffff', lineColor: '#000000'
     });
     return c;
   }
@@ -49,7 +50,7 @@
   function render() {
     var box = $('preview');
     box.innerHTML = '';
-    items.forEach(function (it) {
+    items.slice(0, 20).forEach(function (it) {
       var wrap = document.createElement('div');
       wrap.className = 'label-preview';
       wrap.appendChild(canvasFor(it.upc));
@@ -62,14 +63,30 @@
     });
   }
 
+  function clearItems() {
+    items = [];
+    $('preview').innerHTML = '';
+  }
+
+  ['upc', 'product', 'qty'].forEach(function (id) {
+    $(id).addEventListener('input', clearItems);
+  });
+
   function readForm() {
     var code = fullCode($('upc').value);
     if (!code) {
+      clearItems();
       say('Enter 11 digits (we add the 12th) or a valid 12-digit UPC-A number.');
       return null;
     }
     var qty = Math.max(1, Math.min(300, parseInt($('qty').value, 10) || 1));
     return { upc: code, product: $('product').value.trim(), qty: qty };
+  }
+
+  if (typeof JsBarcode !== 'function' || typeof jspdf === 'undefined' || typeof Papa === 'undefined') {
+    say('A required local file could not load. Reload the page; if this continues, contact support.');
+    document.querySelectorAll('button, #csv').forEach(function (el) { el.disabled = true; });
+    return;
   }
 
   $('form').addEventListener('submit', function (e) {
@@ -84,8 +101,6 @@
   $('btn-png').addEventListener('click', function () {
     var it = items[0] || readForm();
     if (!it) return;
-    items = [it];
-    render();
     canvasFor(it.upc).toBlob(function (blob) {
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
@@ -98,10 +113,8 @@
   $('btn-svg').addEventListener('click', function () {
     var it = items[0] || readForm();
     if (!it) return;
-    items = [it];
-    render();
     var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    JsBarcode(svg, it.upc, { format: 'UPC', displayValue: true, fontSize: 18, margin: 6, width: 2, height: 70 });
+    JsBarcode(svg, it.upc, { format: 'UPC', displayValue: true, fontSize: 54, margin: 60, width: 6, height: 210 });
     var blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
@@ -120,14 +133,15 @@
     var sheet = LABELS[$('sheet').value] || LABELS['5160'];
     var perPage = sheet.cols * sheet.rows;
     var doc = new jspdf.jsPDF({ unit: 'mm', format: 'letter' });
-    var flat = [];
-    items.forEach(function (it) {
-      for (var i = 0; i < (it.qty || 1); i++) flat.push(it);
-    });
-    if (flat.length > 1500) {
-      say('That is ' + flat.length + ' labels — trim the batch or raise copies per run.');
+    var total = items.reduce(function (sum, it) { return sum + it.qty; }, 0);
+    if (total > 1500) {
+      say('That is ' + total + ' labels. Reduce quantities to 1,500 labels per PDF.');
       return;
     }
+    var flat = [];
+    items.forEach(function (it) {
+      for (var i = 0; i < it.qty; i++) flat.push(it);
+    });
     flat.forEach(function (it, idx) {
       var pos = idx % perPage;
       if (idx > 0 && pos === 0) doc.addPage();
@@ -136,8 +150,8 @@
       var x = sheet.ml + col * (sheet.w + sheet.gx);
       var y = sheet.mt + row * (sheet.h + sheet.gy);
       var canvas = canvasFor(it.upc);
-      var w = sheet.w - 4;
-      var h = Math.min(w * (canvas.height / canvas.width), sheet.h - 5);
+      var w = Math.min(sheet.w - 4, 62, (sheet.h - 5) * canvas.width / canvas.height);
+      var h = w * (canvas.height / canvas.width);
       doc.addImage(canvas.toDataURL('image/png'), 'PNG', x + 2, y + 1, w, h);
       if (it.product) {
         doc.setFontSize(7);
@@ -151,9 +165,16 @@
   $('csv').addEventListener('change', function (e) {
     var file = e.target.files && e.target.files[0];
     if (!file) return;
+    clearItems();
+    if (file.size > 2 * 1024 * 1024) { say('CSV must be no larger than 2 MB.'); return; }
     Papa.parse(file, {
+      preview: 501,
+      transformHeader: function (header) { return header.trim().toLowerCase(); },
+      error: function () { say('Could not read this CSV. Please select the file again.'); },
       header: true, skipEmptyLines: true, complete: function (res) {
-        var rows = (res.data || []).slice(0, 500);
+        if (res.errors && res.errors.length) { say('CSV has formatting errors. Check the header and column counts.'); return; }
+        if ((res.data || []).length > 500) { say('CSV exceeds 500 rows. Split the file and try again.'); return; }
+        var rows = res.data || [];
         var good = [], bad = 0;
         rows.forEach(function (r) {
           var raw = r.upc || r.upc_a || r.code || r.barcode || '';
@@ -162,13 +183,13 @@
           good.push({
             upc: code,
             product: String(r.product || r.name || r.title || '').slice(0, 60),
-            qty: Math.max(1, parseInt(r.qty || r.quantity || 1, 10) || 1)
+            qty: Math.min(1501, Math.max(1, parseInt(r.qty || r.quantity || 1, 10) || 1))
           });
         });
         if (!good.length) { say('No valid UPC-A rows found. Expect a column named upc with 11 or 12 digits.'); return; }
         items = good;
         render();
-        say(good.length + ' rows loaded' + (bad ? ', ' + bad + ' skipped (invalid check digit or length)' : '') + '. Pick a label sheet, then Export label PDF.', true);
+        say(good.length + ' rows loaded' + (bad ? ', ' + bad + ' skipped (invalid check digit or length)' : '') + '. Preview: first 20 rows maximum. Pick a label sheet, then Export label PDF.', true);
       }
     });
   });

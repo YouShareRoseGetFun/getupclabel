@@ -3,14 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>UPC Label Generator — Free UPC-A Barcode &amp; Printable Label Maker</title>
-<meta name="description" content="Generate a valid UPC-A barcode from 11 digits, we compute the 12th check digit for you, then print it on Avery label sheets. Free PNG and SVG, no sign-up, commercial use allowed.">
+<title>UPC Label Generator — Free Barcodes &amp; Label PDFs</title>
+<meta name="description" content="Generate UPC-A barcodes with check digit validation. Download PNG or SVG, import CSV batches, and print Avery label PDFs. Free, no sign-up.">
 <link rel="canonical" href="https://getupclabel.com/">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://getupclabel.com/">
+<meta property="og:title" content="UPC Label Generator — Free Barcodes &amp; Label PDFs">
+<meta property="og:description" content="Generate UPC-A barcodes, validate check digits, and export printable Avery label PDFs. Free PNG, SVG, and CSV batch support.">
+<meta property="og:image" content="https://getupclabel.com/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Get UPC Label: UPC-A barcode and printable label generator">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="/assets/style.css">
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+<script src="/assets/vendor/JsBarcode.all.min.js" defer></script>
+<script src="/assets/vendor/jspdf.umd.min.js" defer></script>
+<script src="/assets/vendor/papaparse.min.js" defer></script>
 <script src="/assets/app.js" defer></script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebSite", "name": "Get UPC Label", "url": "https://getupclabel.com/"}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can I enter an existing 12-digit UPC?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Enter either 11 digits to calculate the final check digit, or all 12 digits to validate an existing UPC-A. Keep leading zeros: they are part of the number. Letters, spaces inside a number, and other barcode formats are rejected."}}, {"@type": "Question", "name": "Does a valid check digit mean I own the number?", "acceptedAnswer": {"@type": "Answer", "text": "No. A check digit verifies the arithmetic of a UPC-A number. It does not confirm ownership, product registration, or retailer acceptance. Use numbers assigned to your business and confirm requirements with the retailer before labeling stock."}}, {"@type": "Question", "name": "How do I prepare a CSV batch?", "acceptedAnswer": {"@type": "Answer", "text": "Use a header row named upc, product, qty. Store UPC values as text in your spreadsheet so leading zeros are preserved. Product names and quantities are optional. Each valid row becomes a product; qty controls copies. The preview displays only the first 20 products, while the PDF includes every accepted row, up to 1,500 labels. Files exceeding 500 rows are rejected so no rows are silently lost."}}, {"@type": "Question", "name": "Should I download PNG, SVG, or PDF?", "acceptedAnswer": {"@type": "Answer", "text": "PNG is a high resolution raster image suitable for documents. SVG keeps the bars as vector shapes that scale cleanly. Both download the first product in an imported batch. PDF places all accepted products on US Letter sheets using the selected Avery layout. Avoid stretching a barcode independently in either direction."}}, {"@type": "Question", "name": "How do I print labels at the correct size?", "acceptedAnswer": {"@type": "Answer", "text": "Choose US Letter paper and print at actual size or 100 percent. Disable fit to page and browser scaling. First print on plain paper and compare it against your label stock. Check the first and last rows for alignment before using adhesive sheets. Printer feed and margin settings can affect placement, so test several pages before a production run."}}, {"@type": "Question", "name": "Why might a printed barcode fail to scan?", "acceptedAnswer": {"@type": "Answer", "text": "Blurry edges, low contrast, glossy reflections, clipping, or insufficient blank space beside the bars can prevent scanning. Keep the white margins intact and use dark ink on a plain white background. Test the exported image on screen and then scan a physical print with the scanner used in your workflow. Higher resolution helps preserve edges but cannot guarantee a successful scan."}}, {"@type": "Question", "name": "Are my product numbers uploaded?", "acceptedAnswer": {"@type": "Answer", "text": "Barcode generation, CSV parsing, and PDF creation run in your browser using libraries served by this website. The tool does not upload your CSV or product entries. Your browser still requests website files from the hosting provider; see the Privacy page for details."}}]}]}</script>
 </head>
 <body>
 <header class="site-header">
@@ -50,7 +61,7 @@
           <select id="sheet">
             <option value="5160" selected>Avery 5160 — 30 labels (2.625 × 1 in)</option>
             <option value="5163">Avery 5163 — 10 labels (4 × 2 in)</option>
-            <option value="5164">Avery 5164 — 6 labels (3.33 × 4 in)</option>
+            <option value="5164">Avery 5164 — 6 labels (4 × 3⅓ in)</option>
           </select>
         </label>
       </div>
@@ -65,10 +76,11 @@
     <details class="batch">
       <summary>Batch: import a CSV (upc, product, qty)</summary>
       <p class="hint">Columns: <code>upc</code>, <code>product</code> (optional), <code>qty</code> (optional).
-         Up to 500 rows. Everything is processed in your browser — nothing is uploaded.</p>
+         Up to 500 rows and 1,500 labels per PDF. Preview shows the first 20 rows. Everything is processed in your browser — nothing is uploaded.</p>
       <input type="file" id="csv" accept=".csv,text/csv">
     </details>
 
+    <noscript><p>This tool requires JavaScript to generate barcodes. Enable JavaScript and reload.</p></noscript>
     <p id="msg" class="msg" role="status"></p>
     <div id="preview" class="preview"></div>
   </section>
@@ -80,10 +92,8 @@
        your product to scan in a retail store or on Amazon, the number inside the barcode has to be one
        you are authorised to use — that means a GTIN / company prefix issued by GS1, purchased through
        GS1 US in the United States.</p>
-    <p><strong>What GS1 US charges</strong> (published on gs1us.org): a single GTIN is <strong>$30 with
-       no annual fee</strong>; 10 GTINs are $250 plus $50/year; 100 GTINs are $750 plus $150/year;
-       1,000 GTINs are $2,500 plus $500/year. A company prefix is what lets you assign numbers
-       yourself within your own range.</p>
+    <p>Check current number licensing options directly with <a href="https://www.gs1us.org/">GS1 US</a>
+       or your local GS1 organisation. Generating a barcode here does not register a number or assign ownership.</p>
     <p><strong>Numbers you invent yourself are for internal use only</strong> — inventory, warehouse,
        in-house tracking. They must not go on a product you sell to the public: an invented number can
        collide with a number another brand already owns, and the retailer will reject the listing or
@@ -104,6 +114,15 @@
         Test one sheet with a real scanner before running a full batch.</li>
     </ol>
   </section>
+<section id="faq" class="card"><h2>UPC label questions</h2>
+<h3>Can I enter an existing 12-digit UPC?</h3><p>Yes. Enter either 11 digits to calculate the final check digit, or all 12 digits to validate an existing UPC-A. Keep leading zeros: they are part of the number. Letters, spaces inside a number, and other barcode formats are rejected.</p>
+<h3>Does a valid check digit mean I own the number?</h3><p>No. A check digit verifies the arithmetic of a UPC-A number. It does not confirm ownership, product registration, or retailer acceptance. Use numbers assigned to your business and confirm requirements with the retailer before labeling stock.</p>
+<h3>How do I prepare a CSV batch?</h3><p>Use a header row named upc, product, qty. Store UPC values as text in your spreadsheet so leading zeros are preserved. Product names and quantities are optional. Each valid row becomes a product; qty controls copies. The preview displays only the first 20 products, while the PDF includes every accepted row, up to 1,500 labels. Files exceeding 500 rows are rejected so no rows are silently lost.</p>
+<h3>Should I download PNG, SVG, or PDF?</h3><p>PNG is a high resolution raster image suitable for documents. SVG keeps the bars as vector shapes that scale cleanly. Both download the first product in an imported batch. PDF places all accepted products on US Letter sheets using the selected Avery layout. Avoid stretching a barcode independently in either direction.</p>
+<h3>How do I print labels at the correct size?</h3><p>Choose US Letter paper and print at actual size or 100 percent. Disable fit to page and browser scaling. First print on plain paper and compare it against your label stock. Check the first and last rows for alignment before using adhesive sheets. Printer feed and margin settings can affect placement, so test several pages before a production run.</p>
+<h3>Why might a printed barcode fail to scan?</h3><p>Blurry edges, low contrast, glossy reflections, clipping, or insufficient blank space beside the bars can prevent scanning. Keep the white margins intact and use dark ink on a plain white background. Test the exported image on screen and then scan a physical print with the scanner used in your workflow. Higher resolution helps preserve edges but cannot guarantee a successful scan.</p>
+<h3>Are my product numbers uploaded?</h3><p>Barcode generation, CSV parsing, and PDF creation run in your browser using libraries served by this website. The tool does not upload your CSV or product entries. Your browser still requests website files from the hosting provider; see the Privacy page for details.</p>
+</section>
 </main>
 
 <footer class="site-footer">

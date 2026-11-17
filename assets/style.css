@@ -27,3 +27,9 @@ button:hover { border-color:#c3ccd5; }
 .site-footer { border-top:1px solid var(--line); padding:20px; text-align:center; font-size:14px; color:var(--muted); }
 .site-footer a { color:var(--muted); margin:0 10px; }
 @media (max-width:640px) { .grid { grid-template-columns:1fr; } .hero h1 { font-size:27px; } }
+
+.label-preview { max-width:100%; min-width:0; }
+.label-preview canvas { display:block; width:100%; max-width:320px; height:auto; }
+.field { min-width:0; }
+.field input, .field select { width:100%; min-width:0; }
+button:disabled { opacity:.55; cursor:not-allowed; }
