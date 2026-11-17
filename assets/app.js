@@ -83,10 +83,28 @@
     return { upc: code, product: $('product').value.trim(), qty: qty };
   }
 
-  if (typeof JsBarcode !== 'function' || typeof jspdf === 'undefined' || typeof Papa === 'undefined') {
+  if (typeof JsBarcode !== 'function' || typeof Papa === 'undefined') {
     say('A required local file could not load. Reload the page; if this continues, contact support.');
     document.querySelectorAll('button, #csv').forEach(function (el) { el.disabled = true; });
     return;
+  }
+
+  var jspdfPromise = null;
+  function loadJsPDF() {
+    if (jspdfPromise) return jspdfPromise;
+    jspdfPromise = new Promise(function (resolve, reject) {
+      if (typeof jspdf !== 'undefined' && jspdf.jsPDF) { resolve(); return; }
+      var s = document.createElement('script');
+      s.src = '/assets/vendor/jspdf.umd.min.js';
+      s.async = true;
+      s.onload = function () {
+        if (typeof jspdf !== 'undefined' && jspdf.jsPDF) { resolve(); }
+        else { jspdfPromise = null; reject(new Error('jspdf unavailable')); }
+      };
+      s.onerror = function () { jspdfPromise = null; reject(new Error('jspdf load failed')); };
+      document.head.appendChild(s);
+    });
+    return jspdfPromise;
   }
 
   $('form').addEventListener('submit', function (e) {
@@ -132,34 +150,39 @@
     }
     var sheet = LABELS[$('sheet').value] || LABELS['5160'];
     var perPage = sheet.cols * sheet.rows;
-    var doc = new jspdf.jsPDF({ unit: 'mm', format: 'letter' });
     var total = items.reduce(function (sum, it) { return sum + it.qty; }, 0);
     if (total > 1500) {
       say('That is ' + total + ' labels. Reduce quantities to 1,500 labels per PDF.');
       return;
     }
-    var flat = [];
-    items.forEach(function (it) {
-      for (var i = 0; i < it.qty; i++) flat.push(it);
+    say('Preparing ' + total + ' labels as a PDF…', true);
+    loadJsPDF().then(function () {
+      var doc = new jspdf.jsPDF({ unit: 'mm', format: 'letter' });
+      var flat = [];
+      items.forEach(function (it) {
+        for (var i = 0; i < it.qty; i++) flat.push(it);
+      });
+      flat.forEach(function (it, idx) {
+        var pos = idx % perPage;
+        if (idx > 0 && pos === 0) doc.addPage();
+        var col = pos % sheet.cols;
+        var row = Math.floor(pos / sheet.cols);
+        var x = sheet.ml + col * (sheet.w + sheet.gx);
+        var y = sheet.mt + row * (sheet.h + sheet.gy);
+        var canvas = canvasFor(it.upc);
+        var w = Math.min(sheet.w - 4, 62, (sheet.h - 5) * canvas.width / canvas.height);
+        var h = w * (canvas.height / canvas.width);
+        doc.addImage(canvas.toDataURL('image/png'), 'PNG', x + 2, y + 1, w, h);
+        if (it.product) {
+          doc.setFontSize(7);
+          doc.text(String(it.product).slice(0, 42), x + 2, y + sheet.h - 1.5);
+        }
+      });
+      doc.save('upc-labels-' + $('sheet').value + '.pdf');
+      say(flat.length + ' labels laid out on ' + $('sheet').value + ' geometry.', true);
+    }).catch(function () {
+      say('The PDF library could not load. Check your connection, or download PNG / SVG instead.');
     });
-    flat.forEach(function (it, idx) {
-      var pos = idx % perPage;
-      if (idx > 0 && pos === 0) doc.addPage();
-      var col = pos % sheet.cols;
-      var row = Math.floor(pos / sheet.cols);
-      var x = sheet.ml + col * (sheet.w + sheet.gx);
-      var y = sheet.mt + row * (sheet.h + sheet.gy);
-      var canvas = canvasFor(it.upc);
-      var w = Math.min(sheet.w - 4, 62, (sheet.h - 5) * canvas.width / canvas.height);
-      var h = w * (canvas.height / canvas.width);
-      doc.addImage(canvas.toDataURL('image/png'), 'PNG', x + 2, y + 1, w, h);
-      if (it.product) {
-        doc.setFontSize(7);
-        doc.text(String(it.product).slice(0, 42), x + 2, y + sheet.h - 1.5);
-      }
-    });
-    doc.save('upc-labels-' + $('sheet').value + '.pdf');
-    say(flat.length + ' labels laid out on ' + $('sheet').value + ' geometry.', true);
   });
 
   $('csv').addEventListener('change', function (e) {
