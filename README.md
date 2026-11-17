@@ -11,7 +11,7 @@ Run regression checks with `node --test tests/app.test.cjs`. These use a DOM/PDF
 - Test 500 CSV rows (20 previews, all accepted rows exported), leading zeros, malformed files and the 1,500-label limit. Keep UPC spreadsheet cells as text.
 - Test Safari on iPhone and Chrome on Android: file selection, PNG/SVG/PDF downloads.
 - Print at actual size on Letter paper. Check Avery 5160 offsets (left about 4.8 mm, top 12.7 mm), scan the print, and check three pages for drift. Higher image resolution alone does not guarantee scanner compatibility.
-- Confirm production serves `/`, `/privacy.html`, `/terms.html`, `/contact.html`, `/assets/og-image.png`, `/robots.txt` and `/sitemap.xml`.
+- Confirm production serves `/`, `/privacy`, `/terms`, `/contact`, `/assets/og-image.png`, `/robots.txt` and `/sitemap.xml`.
 - Bind `getupclabel.com`, then submit its sitemap to the verified Search Console property. Canonical and sitemap intentionally use the production hostname.
 - Disable the workers.dev preview URL or configure a host-specific `X-Robots-Tag: noindex` rule in Cloudflare for preview responses. Do not apply that rule to the production domain.
 - Verify the repository Issues feature is enabled for the Contact link before launch.
@@ -19,3 +19,16 @@ Run regression checks with `node --test tests/app.test.cjs`. These use a DOM/PDF
 Label geometry reference: https://www.avery.com/templates/5164 (4 inches across, 3⅓ inches down, six labels per Letter sheet). Physical printer alignment still requires testing.
 
 Vendored versions: JsBarcode 3.11.6, jsPDF 2.5.1, Papa Parse 5.4.1. Upstream copyright/license headers are retained. Review upstream updates before replacing these pinned files.
+
+## Deployment verification
+
+Cloudflare serves the three supporting HTML files at extensionless URLs. Keep
+`privacy.html`, `terms.html`, and `contact.html` as the source filenames; links,
+canonicals and sitemap entries use `/privacy`, `/terms`, and `/contact`.
+
+After deployment, fetch the sitemap from the deployed hostname and confirm these
+four entries: `/`, `/privacy`, `/terms`, `/contact` (all using the production domain
+inside the XML). If only the homepage appears, confirm the deployed commit and
+asset directory first, then check caching; the repository sitemap has four entries.
+Fetch each vendor script individually and verify it returns JavaScript with status
+200 rather than an HTML fallback. The sharing image is a verified 1200 × 630 PNG.
