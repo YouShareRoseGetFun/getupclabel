@@ -75,6 +75,7 @@
   function readForm() {
     var code = fullCode($('upc').value);
     if (!code) {
+      $('upc').focus();
       clearItems();
       say('Enter 11 digits (we add the 12th) or a valid 12-digit UPC-A number.');
       return null;
